@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Becoming</string>
+    <string name="widget_name">Becoming</string>
+    <string name="widget_description">Your identity, today\'s vote and progress toward the next level.</string>
+
+    <!-- Widget picker preview (API 31+) -->
+    <string name="preview_greeting">Hey, Badminton Player</string>
+    <string name="preview_quote">Habits are the compound interest of self-improvement.</string>
+    <string name="preview_progress">Level 1 · 35 votes cast</string>
+    <string name="preview_percent">47%</string>
+    <string name="preview_undo">−</string>
+    <string name="preview_vote">+  Vote</string>
+</resources>

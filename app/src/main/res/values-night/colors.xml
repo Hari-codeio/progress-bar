@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Night palette (60-30-10: neutrals, violet, green to lime). -->
+<resources>
+    <color name="app_background">#0D0E12</color>
+    <color name="widget_surface">#16181F</color>
+    <color name="widget_border">#262933</color>
+    <color name="widget_border_strong">#383C48</color>
+    <color name="widget_track">#23262F</color>
+    <color name="widget_text">#F7F7F8</color>
+    <color name="widget_muted">#A1A1AA</color>
+    <color name="widget_violet">#7050F5</color>
+    <color name="widget_on_violet">#FFFFFF</color>
+    <color name="widget_identity_tile">#221A40</color>
+    <color name="widget_identity_icon">#A28BFF</color>
+    <color name="widget_disabled">#262933</color>
+    <color name="widget_disabled_content">#5A5D68</color>
+    <color name="widget_lime">#C2F542</color>
+    <color name="widget_on_lime">#0D0E12</color>
+    <color name="widget_progress_preview">#5FE04E</color>
+</resources>

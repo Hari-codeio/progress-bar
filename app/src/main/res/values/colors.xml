@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Day palette (60-30-10: neutrals, violet, green to lime). Night overrides live in values-night.
+     Used by XML-only surfaces: window background, pre-API-31 widget shapes, widget icons and preview. -->
+<resources>
+    <color name="app_background">#F7F7F9</color>
+    <color name="widget_surface">#FFFFFF</color>
+    <color name="widget_border">#E4E4E9</color>
+    <color name="widget_border_strong">#D0D0D8</color>
+    <color name="widget_track">#E9E9EE</color>
+    <color name="widget_text">#0D0E12</color>
+    <color name="widget_muted">#5B5B66</color>
+    <color name="widget_violet">#6A45F0</color>
+    <color name="widget_on_violet">#FFFFFF</color>
+    <color name="widget_identity_tile">#EEE9FF</color>
+    <color name="widget_identity_icon">#6A45F0</color>
+    <color name="widget_disabled">#EFEFF3</color>
+    <color name="widget_disabled_content">#A1A1AA</color>
+    <color name="widget_lime">#C2F542</color>
+    <color name="widget_on_lime">#0D0E12</color>
+    <color name="widget_progress_preview">#2FA83A</color>
+    <color name="ic_launcher_background">#0D0E12</color>
+</resources>

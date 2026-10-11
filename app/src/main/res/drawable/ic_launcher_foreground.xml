@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Progress ring (green start, lime arc) with a violet rising chevron, inside the 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Track ring -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M32,54A22,22 0,1 1,76 54A22,22 0,1 1,32 54"
+        android:strokeColor="#23262F"
+        android:strokeWidth="7" />
+    <!-- 3/4 progress arc, clockwise from 12 o'clock -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,32A22,22 0,1 1,32 54"
+        android:strokeColor="#C2F542"
+        android:strokeLineCap="round"
+        android:strokeWidth="7" />
+    <!-- Arc start cap in green -->
+    <path
+        android:fillColor="#1EC07F"
+        android:pathData="M50.5,32a3.5,3.5 0,1 0,7 0a3.5,3.5 0,1 0,-7 0" />
+    <!-- Rising chevron -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M45,59L54,50L63,59"
+        android:strokeColor="#A28BFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="6" />
+</vector>

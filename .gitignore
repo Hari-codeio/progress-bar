@@ -1,0 +1,30 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+local.properties
+
+# Build outputs and signing
+*.apk
+*.aab
+*.ap_
+*.dex
+*.jks
+*.keystore
+*.p12
+output.json
+
+# Kotlin
+.kotlin/
+
+# OS
+.DS_Store
+Thumbs.db
