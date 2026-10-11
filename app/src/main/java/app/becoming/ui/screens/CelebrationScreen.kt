@@ -22,7 +22,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -36,15 +35,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.becoming.R
 import app.becoming.domain.HomeState
 import app.becoming.domain.LevelSummary
 import app.becoming.domain.Levels
 import app.becoming.domain.QUOTES
+import app.becoming.ui.IdentityAvatar
 import app.becoming.ui.screen
 import app.becoming.ui.theme.BecomingTheme
 import java.util.concurrent.TimeUnit
@@ -85,7 +83,7 @@ fun CelebrationScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(12.dp))
-            RingBadge()
+            RingBadge(iconKey = state.displayIconKey, photoPath = state.iconPath)
             Spacer(Modifier.height(24.dp))
             Text(
                 "Level ${summary.level} complete",
@@ -176,9 +174,9 @@ fun CelebrationScreen(
     }
 }
 
-/** Concentric violet rings around a lime (win) disc with the dark identity mark. */
+/** Concentric violet rings around a lime (win) disc with the identity icon (dark) or photo. */
 @Composable
-private fun RingBadge() {
+private fun RingBadge(iconKey: String?, photoPath: String?) {
     val c = BecomingTheme.colors
     Box(Modifier.size(168.dp), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
@@ -187,12 +185,7 @@ private fun RingBadge() {
             drawCircle(color = c.ringInner, radius = radius * 0.76f)
             drawCircle(color = c.lime, radius = radius * 0.52f)
         }
-        Icon(
-            painter = painterResource(R.drawable.ic_identity),
-            contentDescription = null,
-            tint = c.onLime,
-            modifier = Modifier.size(44.dp),
-        )
+        IdentityAvatar(iconKey = iconKey, photoPath = photoPath, size = 80.dp, tile = c.lime, tint = c.onLime)
     }
 }
 

@@ -9,6 +9,10 @@ data class JourneyInput(
     val startEpochDay: Long,
     val levelStartEpochDay: Long,
     val unlockedLevel: Int,
+    /** Preset chosen by hand, or null for automatic. */
+    val iconKey: String? = null,
+    /** Photo path (relative to filesDir), or null. */
+    val iconPath: String? = null,
 )
 
 /** A finished level: what gets saved as a LevelRecord and shown on the celebration screen. */
@@ -48,7 +52,14 @@ data class HomeState(
     val completedLevel: LevelSummary?,
     /** Today's quote (rotates daily). */
     val quote: String,
+    /** Stored preset key (null = automatic); see [displayIconKey]. */
+    val iconKey: String? = null,
+    /** Stored photo path (relative to filesDir), or null. A photo wins over any preset. */
+    val iconPath: String? = null,
 ) {
+    /** The preset to draw when there is no photo; null means the default identity mark. */
+    val displayIconKey: String? get() = resolveIconKey(iconKey, skill, identityTitle)
+
     val levelLabel: String get() = "Level $level · $levelName"
 
     /** Widget label: "12 votes cast" / "20 to go" / "Level complete". */

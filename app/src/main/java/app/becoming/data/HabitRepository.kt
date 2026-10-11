@@ -4,7 +4,9 @@ import androidx.room.withTransaction
 import app.becoming.domain.GreetBy
 import app.becoming.domain.HabitRules
 import app.becoming.domain.HomeState
+import app.becoming.domain.IdentityIcons
 import app.becoming.domain.Levels
+import app.becoming.domain.validateIdentity
 import java.time.LocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +27,7 @@ data class JourneyHistory(
 class HabitRepository(
     private val db: BecomingDatabase,
     private val settings: SettingsStore,
+    private val photos: IdentityPhotoStore,
 ) {
     private val journeys = db.journeyDao()
     private val votes = db.voteDao()
@@ -38,6 +41,9 @@ class HabitRepository(
     }
 
     val greetBy: Flow<GreetBy> = settings.greetBy
+
+    /** null = follow the system theme; true/false = forced dark/light. */
+    val darkMode: Flow<Boolean?> = settings.darkMode
 
     /** Null when there is no active journey (the app shows Setup). */
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -53,25 +59,86 @@ class HabitRepository(
         }
         .distinctUntilChanged()
 
-    /** Creates the journey and (endowed progress) casts today's first vote in the same transaction. */
-    suspend fun startJourney(name: String, skill: String, identityTitle: String, castFirstVote: Boolean = true): Long =
-        db.withTransaction {
+    /**
+     * Creates the journey and (endowed progress) casts today's first vote in the same transaction.
+     * [iconPath] may be a pending photo from the picker; it is moved into permanent storage here.
+     */
+    suspend fun startJourney(
+        name: String,
+        skill: String,
+        identityTitle: String,
+        iconKey: String? = null,
+        iconPath: String? = null,
+        castFirstVote: Boolean = true,
+    ): Long {
+        val clean = validateIdentity(name, skill, identityTitle)
+        val id = db.withTransaction {
             refreshToday()
             val day = today.value
             // Only one active journey at a time.
             journeys.getActive()?.let { journeys.update(it.copy(status = JourneyStatus.COMPLETED, completedEpochDay = day)) }
-            val id = journeys.insert(
+            val newId = journeys.insert(
                 JourneyEntity(
-                    name = name.trim(),
-                    skill = skill.trim(),
-                    identityTitle = identityTitle.trim(),
+                    name = clean.name,
+                    skill = clean.skill,
+                    identityTitle = clean.identityTitle,
                     startEpochDay = day,
                     levelStartEpochDay = day,
+                    iconKey = IdentityIcons.byKey(iconKey)?.key,
                 ),
             )
-            if (castFirstVote) votes.insert(VoteEntity(journeyId = id, epochDay = day))
-            id
+            if (castFirstVote) votes.insert(VoteEntity(journeyId = newId, epochDay = day))
+            newId
         }
+        val storedPhoto = photos.commitIfPending(iconPath, id)
+        if (storedPhoto != null) {
+            db.withTransaction {
+                journeys.getActive()?.takeIf { it.id == id }?.let { journeys.update(it.copy(iconPath = storedPhoto)) }
+            }
+        }
+        return id
+    }
+
+    /**
+     * Edits the active journey's identity in one transaction and rewrites the title of every saved
+     * level of that journey with [Levels.title], so a spelling fix also fixes past badges. Votes,
+     * levels and dates are untouched. A replaced or removed photo file is deleted afterwards.
+     * Callers refresh the widget afterwards (MainViewModel does this for every change).
+     */
+    suspend fun updateIdentity(
+        name: String,
+        skill: String,
+        identityTitle: String,
+        iconKey: String?,
+        iconPath: String?,
+    ): Boolean {
+        val clean = validateIdentity(name, skill, identityTitle)
+        if (!clean.isValid) return false
+        val active = journeys.getActive() ?: return false
+        val newPhoto = photos.commitIfPending(iconPath, active.id)
+        val previous = db.withTransaction {
+            val journey = journeys.getActive()?.takeIf { it.id == active.id } ?: return@withTransaction null
+            journeys.update(
+                journey.copy(
+                    name = clean.name,
+                    skill = clean.skill,
+                    identityTitle = clean.identityTitle,
+                    iconKey = IdentityIcons.byKey(iconKey)?.key,
+                    iconPath = newPhoto,
+                ),
+            )
+            for (level in 1..Levels.MAX_LEVEL) {
+                levels.updateTitle(journey.id, level, Levels.title(level, clean.identityTitle))
+            }
+            journey
+        }
+        if (previous == null) {
+            if (newPhoto != iconPath) photos.delete(newPhoto)
+            return false
+        }
+        if (previous.iconPath != null && previous.iconPath != newPhoto) photos.delete(previous.iconPath)
+        return true
+    }
 
     /** + : inserts today's vote if absent and the current level is not waiting for a choice. */
     suspend fun voteToday(): Boolean = db.withTransaction {
@@ -127,6 +194,8 @@ class HabitRepository(
     }
 
     suspend fun setGreetBy(value: GreetBy) = settings.setGreetBy(value)
+
+    suspend fun setDarkMode(value: Boolean?) = settings.setDarkMode(value)
 
     /** All journeys, newest first, live. */
     fun observeHistory(): Flow<List<JourneyHistory>> =

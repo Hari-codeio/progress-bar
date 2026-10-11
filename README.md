@@ -10,9 +10,9 @@ practise. Each tap is a *vote*. A home-screen widget shows your identity, your p
 ## How it works
 
 1. **Setup.** Enter your name, what you want to master ("Badminton") and what to call yourself
-   ("Badminton Player"). Choose whether the greeting uses your identity or your name.
-   **Cast my first vote** creates the journey *and* casts today's vote, so you start at 1 of 75
-   instead of 0 (endowed progress).
+   ("Badminton Player"), pick an icon or photo, and choose whether the greeting uses your identity or
+   your name. **Cast my first vote** creates the journey *and* casts today's vote, so you start at 1
+   of 75 instead of 0 (endowed progress).
 2. **Home and widget.** Tap **+** once per local calendar day. **−** undoes *today's* vote only;
    past days can't be changed. Missed days never take votes away. Home also shows a daily quote.
 3. **Level complete.** When you reach a level's threshold, **+** is disabled (the widget gets a lime
@@ -21,6 +21,37 @@ practise. Each tap is a *vote*. A home-screen widget shows your identity, your p
    - **Complete my journey**: the level is saved, the journey is closed, and you set up a new
      identity. Your Legacy keeps every journey.
    At Level 5 (day 365) only **Complete** is offered: "You are an Expert Badminton Player".
+4. **Edit identity.** The pencil on Home reopens the form (Save / Cancel). Votes, levels and dates
+   never change; past level titles are rewritten to match, so fixing a typo in "Badminton Playr"
+   also fixes the saved "Committed Badminton Playr" badge.
+
+### Identity form rules
+
+Each field is trimmed and runs of spaces collapse to one (`validateIdentity` in
+`domain/IdentityValidation.kt`). Name and skill: 1 to 30 characters. Identity title: 1 to 32.
+Errors show under the field.
+
+### Identity icon
+
+- 22 presets (`domain/IdentityIcons.kt`): gym, runner, badminton, cricket, football, tennis,
+  swimming, cycling, yoga, meditation, developer, reader, writer, musician, singer, artist,
+  photographer, chef, student, language learner, entrepreneur, speaker.
+- **Auto** (the default): while you type, `suggestIconKey(skill, title)` picks a preset by keyword
+  (case-insensitive whole words, the skill before the title). Picking an icon or photo by hand
+  stops the auto-suggestion; the **Auto** tile turns it back on. Journeys from 1.0.0 have no stored
+  icon, so they get the suggestion automatically.
+- **Upload photo** uses the system photo picker (no permissions). The image is decoded (EXIF rotation
+  honoured), centre-cropped to a square, scaled to 256 px and saved as
+  `filesDir/identity/journey_<id>_<epochMillis>.png`. Replacing or removing a photo deletes the old
+  file. A photo shows as a circle in the app and on the widget (square on launchers older than
+  Android 12, where widgets can't round images).
+- The icon appears on the widget tile, Home, the celebration badge and the Legacy cards.
+
+### Dark mode
+
+The sun/moon button on Home switches between light and dark and remembers the choice; the widget
+follows it too. Until you use it, the app and widget follow the system setting
+(`resolveDark(setting, systemDark)` in `domain/Appearance.kt`).
 
 ### Levels
 
@@ -75,6 +106,13 @@ green to lime about 10% (progress fills only). Lime marks wins: completed levels
 badge, and the widget's level-complete border. **Complete my journey** and **−** are outlined neutral
 buttons. No dynamic colour; system fonts.
 
+### Third-party notices
+
+The identity preset icons (except badminton, which is drawn for this app) and the edit, sun/moon,
+add-photo, delete and auto icons are [Material Symbols](https://github.com/google/material-design-icons)
+by Google, used under the Apache License 2.0. Each such file in `app/src/main/res/drawable` names its
+source symbol in a header comment.
+
 ## Open in Android Studio
 
 Requirements: **Android Studio Ladybug (2024.2) or newer** and **JDK 17 or newer** (the JDK bundled
@@ -99,7 +137,8 @@ Konfetti 2.0.4. compileSdk/targetSdk 35, minSdk 26, JVM target 17. Versions live
 
 Widget layout, top to bottom:
 
-- **Identity card**: icon tile, "Hey, <greeting>", and one line underneath, first match wins:
+- **Identity card**: icon tile (your preset icon or photo), "Hey, <greeting>", and one line
+  underneath, first match wins:
   "Level N complete · X votes" (lime) > "Missed yesterday. Never miss twice." (violet) >
   "Welcome back. Today's vote counts." > today's quote (muted, italic).
 - **Progress**: the bar, then "Level 2 · 20 votes cast" on the left and "27%" on the right.
@@ -111,16 +150,16 @@ midnight (a WorkManager job), so "Voted today" resets each day.
 
 ## Run the tests
 
-The level, progress, label, colour, message and quote rules are plain Kotlin in
-`app/src/main/java/app/becoming/domain/` (`HabitRules.kt`, `Quotes.kt`), with JUnit 4 tests in
-`app/src/test/java/app/becoming/domain/HabitRulesTest.kt`.
+The level, progress, label, colour, message, quote, identity-validation, icon-suggestion and
+dark-mode rules are plain Kotlin in `app/src/main/java/app/becoming/domain/`, with JUnit 4 tests in
+`app/src/test/java/app/becoming/domain/` (`HabitRulesTest.kt`, `IdentityTest.kt`).
 
 ```bash
 ./gradlew test          # macOS / Linux
 gradlew.bat test        # Windows
 ```
 
-Or right-click `HabitRulesTest` in Android Studio and choose **Run**.
+Or right-click the `domain` test folder in Android Studio and choose **Run Tests**.
 
 ## Quotes
 
@@ -132,9 +171,13 @@ published app carries copyright risk, so keep the set small and always attribute
 ## Data and backup
 
 - Room database `becoming.db`: journeys, one vote row per journey per day, and saved level records.
-- DataStore: only the greeting preference (identity or name).
-- `android:allowBackup="true"`: Android Auto Backup restores your journeys when you set up a new phone
-  from a Google backup.
+  Schema version 2 (app 1.1.0) adds two nullable columns to `journeys`, `iconKey` and `iconPath`,
+  through an additive migration (`MIGRATION_1_2`). There is no destructive fallback: an upgrade can
+  never wipe votes.
+- Identity photos: `filesDir/identity/` (the database stores the path relative to `filesDir`).
+- DataStore: the greeting preference (identity or name) and the theme choice (unset = follow system).
+- `android:allowBackup="true"`: Android Auto Backup restores your journeys and photos when you set up
+  a new phone from a Google backup.
 
 ## Project layout
 
@@ -142,16 +185,19 @@ published app carries copyright risk, so keep the set small and always attribute
 app/src/main/java/app/becoming/
   BecomingApp.kt        Application + AppContainer (manual DI)
   MainActivity.kt
-  domain/               Pure rules (levels, progress, labels, colours, messages, daily quote) and models
-  data/                 Room entities/DAOs/database, DataStore settings, HabitRepository
-  ui/                   NavHost root, view model, theme, Setup/Home/Celebration/Legacy screens
+  domain/               Pure rules (levels, progress, labels, colours, messages, daily quote,
+                        identity validation, icon presets and suggestions, dark mode) and models
+  data/                 Room entities/DAOs/database + migration, DataStore settings, photo store,
+                        HabitRepository
+  ui/                   NavHost root, view model, theme, identity visuals, IdentityForm
+                        (Setup/Edit), Home/Celebration/Legacy screens
   widget/               Glance widget, vote/undo actions, receiver
   work/                 MidnightWorker (daily widget refresh)
 ```
 
 ## Versioning and releases
 
-The version lives in `gradle.properties` (`VERSION_NAME`, for example `1.0.0`); `versionCode` is
+The version lives in `gradle.properties` (`VERSION_NAME`, currently `1.1.0`); `versionCode` is
 derived from it (MAJOR×10000 + MINOR×100 + PATCH). Release builds are signed only when the
 `BECOMING_KEYSTORE` (PKCS12 file path), `BECOMING_KEYSTORE_PASSWORD`, `BECOMING_KEY_ALIAS` and
 `BECOMING_KEY_PASSWORD` environment variables are set, which is how the CI workflow in
@@ -159,7 +205,7 @@ derived from it (MAJOR×10000 + MINOR×100 + PATCH). Release builds are signed o
 
 ## Build status
 
-This project was written on a machine without a JDK or Android SDK, so it has **not been compiled
-or run yet**. The first Gradle sync and `./gradlew test` in Android Studio are the first real build.
-The Gradle wrapper files (`gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar`) are the
-official Gradle 8.9 files; the jar's SHA-256 matches the checksum Gradle publishes.
+The code is written without a local JDK or Android SDK; the GitHub Actions workflow (Ubuntu, JDK 17)
+is the compile and unit-test check for every push. The Gradle wrapper files (`gradlew`, `gradlew.bat`,
+`gradle/wrapper/gradle-wrapper.jar`) are the official Gradle 8.9 files; the jar's SHA-256 matches the
+checksum Gradle publishes.

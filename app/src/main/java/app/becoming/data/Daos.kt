@@ -51,4 +51,8 @@ interface LevelRecordDao {
 
     @Query("SELECT * FROM level_records ORDER BY journeyId, level")
     fun observeAll(): Flow<List<LevelRecordEntity>>
+
+    /** Rewrites a saved badge title (used when the identity title is edited). Dates and votes stay. */
+    @Query("UPDATE level_records SET title = :title WHERE journeyId = :journeyId AND level = :level")
+    suspend fun updateTitle(journeyId: Long, level: Int, title: String): Int
 }

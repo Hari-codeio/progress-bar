@@ -38,6 +38,8 @@ import app.becoming.data.JourneyHistory
 import app.becoming.data.JourneyStatus
 import app.becoming.data.LevelRecordEntity
 import app.becoming.domain.Levels
+import app.becoming.domain.resolveIconKey
+import app.becoming.ui.IdentityAvatar
 import app.becoming.ui.formatDay
 import app.becoming.ui.screen
 import app.becoming.ui.theme.BecomingTheme
@@ -94,12 +96,22 @@ private fun JourneyCard(history: JourneyHistory, today: Long) {
             .border(1.dp, c.border, shape)
             .padding(18.dp),
     ) {
-        Text(journey.identityTitle, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = c.text)
-        Text(
-            "${journey.skill} · started ${formatDay(journey.startEpochDay)}",
-            style = MaterialTheme.typography.bodySmall,
-            color = c.muted,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IdentityAvatar(
+                iconKey = resolveIconKey(journey.iconKey, journey.skill, journey.identityTitle),
+                photoPath = journey.iconPath,
+                size = 44.dp,
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(journey.identityTitle, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = c.text)
+                Text(
+                    "${journey.skill} · started ${formatDay(journey.startEpochDay)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = c.muted,
+                )
+            }
+        }
         Spacer(Modifier.height(4.dp))
         Text(
             if (completed) "Completed ${formatDay(endDay)} · $total votes" else "Active · $total votes",

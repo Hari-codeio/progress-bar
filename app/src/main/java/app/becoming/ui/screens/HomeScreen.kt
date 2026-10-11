@@ -43,6 +43,7 @@ import app.becoming.domain.GreetBy
 import app.becoming.domain.HomeState
 import app.becoming.domain.Levels
 import app.becoming.domain.QUOTE_AUTHOR
+import app.becoming.ui.IdentityAvatar
 import app.becoming.ui.LevelProgressBar
 import app.becoming.ui.screen
 import app.becoming.ui.theme.BecomingTheme
@@ -55,6 +56,8 @@ fun HomeScreen(
     onUndo: () -> Unit,
     onToggleGreet: () -> Unit,
     onOpenHistory: () -> Unit,
+    onEdit: () -> Unit,
+    onToggleDark: () -> Unit,
 ) {
     val c = BecomingTheme.colors
     Column(
@@ -73,6 +76,16 @@ fun HomeScreen(
                 },
             )
             Spacer(Modifier.weight(1f))
+            IconButton(onClick = onToggleDark) {
+                Icon(
+                    painterResource(if (c.isDark) R.drawable.ic_light_mode else R.drawable.ic_dark_mode),
+                    contentDescription = if (c.isDark) "Switch to light mode" else "Switch to dark mode",
+                    tint = c.text,
+                )
+            }
+            IconButton(onClick = onEdit) {
+                Icon(painterResource(R.drawable.ic_edit), contentDescription = "Edit identity", tint = c.text)
+            }
             IconButton(onClick = onOpenHistory) {
                 Icon(painterResource(R.drawable.ic_history), contentDescription = "History", tint = c.text)
             }
@@ -149,6 +162,8 @@ fun HomeScreen(
 @Composable
 private fun HomeContent(state: HomeState) {
     val c = BecomingTheme.colors
+    IdentityAvatar(iconKey = state.displayIconKey, photoPath = state.iconPath, size = 56.dp)
+    Spacer(Modifier.height(16.dp))
     Text(
         state.greeting,
         style = MaterialTheme.typography.displaySmall,

@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.glance.appwidget.updateAll
 import app.becoming.data.BecomingDatabase
 import app.becoming.data.HabitRepository
+import app.becoming.data.IdentityPhotoStore
 import app.becoming.data.SettingsStore
 import app.becoming.widget.BecomingWidget
 import app.becoming.work.MidnightWorker
@@ -13,7 +14,8 @@ import app.becoming.work.MidnightWorker
 class AppContainer(private val context: Context) {
     val database: BecomingDatabase by lazy { BecomingDatabase.build(context) }
     val settings: SettingsStore by lazy { SettingsStore(context) }
-    val repository: HabitRepository by lazy { HabitRepository(database, settings) }
+    val photos: IdentityPhotoStore by lazy { IdentityPhotoStore(context) }
+    val repository: HabitRepository by lazy { HabitRepository(database, settings, photos) }
 
     /** Re-render every placed widget after a change made inside the app. */
     suspend fun refreshWidgets() {

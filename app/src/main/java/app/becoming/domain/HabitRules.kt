@@ -209,6 +209,8 @@ object HabitRules {
             isFinalLevel = level >= Levels.MAX_LEVEL,
             completedLevel = if (complete) levelSummary(level, journey.identityTitle, journey.levelStartEpochDay, days) else null,
             quote = quoteFor(today),
+            iconKey = journey.iconKey,
+            iconPath = journey.iconPath,
         )
     }
 }

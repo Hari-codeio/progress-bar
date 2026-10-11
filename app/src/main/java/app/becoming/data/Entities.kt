@@ -20,8 +20,14 @@ data class JourneyEntity(
     val unlockedLevel: Int = 1,
     val status: JourneyStatus = JourneyStatus.ACTIVE,
     val completedEpochDay: Long? = null,
+    /** v2: preset icon chosen by hand (null = suggest from skill/title). Column "iconKey" TEXT NULL. */
+    val iconKey: String? = null,
+    /** v2: identity photo, relative to filesDir (null = none). Column "iconPath" TEXT NULL. */
+    val iconPath: String? = null,
 ) {
-    fun toInput() = JourneyInput(id, name, skill, identityTitle, startEpochDay, levelStartEpochDay, unlockedLevel)
+    fun toInput() = JourneyInput(
+        id, name, skill, identityTitle, startEpochDay, levelStartEpochDay, unlockedLevel, iconKey, iconPath,
+    )
 }
 
 /** One vote per journey per local calendar day. */
