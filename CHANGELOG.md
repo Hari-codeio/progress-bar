@@ -4,7 +4,7 @@ All notable changes to Becoming are listed here. Versions follow [Semantic Versi
 
 How to release: bump `VERSION_NAME` in `gradle.properties`, add a section below, commit, then tag `vX.Y.Z` and push the tag. CI builds the signed APK and publishes the GitHub Release. `versionCode` is derived from `VERSION_NAME` (MAJOR×10000 + MINOR×100 + PATCH), so it always increases.
 
-## [1.0.0] - 2026-10-11
+## [1.0.0] - 2026-10-12
 
 First release.
 
